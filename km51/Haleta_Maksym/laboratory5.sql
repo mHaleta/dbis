@@ -1,2 +1,43 @@
 -- LABORATORY WORK 5
 -- BY Haleta_Maksym
+-- Написати функцію, що повертає кількість різних продуктів у замовленні, за ключем замовлення
+CREATE OR REPLACE function count_products(orderNum Orders.order_num%TYPE)
+RETURN INTEGER
+as
+  countProducts INTEGER := 0;
+BEGIN
+  SELECT
+    count(DISTINCT Products.prod_name)
+  INTO countProducts
+  FROM
+    Orders JOIN OrderItems
+    ON Orders.order_num = OrderItems.order_num
+    JOIN Products
+    ON OrderItems.prod_id = Products.prod_id
+  WHERE
+    Orders.order_num = orderNum;
+  
+  Return countProducts;
+END count_products;
+
+-- Написати процедуру, що за назвою продукту повертає його ключ, якщо операція неможлива процедура кидає exception
+CREATE OR REPLACE PROCEDURE get_prod_id_by_prod_name(prodName IN Products.prod_name%TYPE)
+is
+prodId Products.prod_id%TYPE;
+invalid_prodName EXCEPTION%;
+BEGIN
+  SELECT
+    prod_id
+  INTO prodId
+  FROM
+    Products
+  WHERE
+    Products.prod_name = prodName;
+    
+  IF prodName NOT IN (SELECT
+    prod_name
+  FROM
+    Products) THEN:
+    RAISE invalid_prodName;
+    
+ END get_prod_id_by_prod_name;
